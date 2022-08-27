@@ -2,8 +2,8 @@ package routes
 
 import (
 	"fmt"
-	"gin_tonic/internal/controllers/example/loginJson"
-	"gin_tonic/internal/controllers/example/postFormData"
+	"gin_tonic/internal/controllers/loginJson"
+	"gin_tonic/internal/controllers/postFormData"
 	"gin_tonic/internal/middleware/logger"
 	"github.com/gin-gonic/gin"
 )

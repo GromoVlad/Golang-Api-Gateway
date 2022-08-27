@@ -1,7 +1,9 @@
 package migration
 
 import (
-	"gin_tonic/internal/pgdb"
+	_ "database/sql"
+	"gin_tonic/internal/database/DB"
+	_ "github.com/lib/pq"
 	"log"
 )
 
@@ -13,7 +15,7 @@ type Migration struct {
 
 func FindAllMigration() []Migration {
 	var migration []Migration
-	err := pgdb.DB().Select(&migration, "SELECT * FROM migrations")
+	err := DB.Connect().Select(&migration, "SELECT * FROM migrations")
 	if err != nil {
 		log.Fatalln(err)
 	}
