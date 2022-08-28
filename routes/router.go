@@ -2,8 +2,9 @@ package routes
 
 import (
 	"fmt"
-	"gin_tonic/internal/controllers/loginJson"
-	"gin_tonic/internal/controllers/postFormData"
+	"gin_tonic/internal/controllers/createUser"
+	"gin_tonic/internal/controllers/listUser"
+	"gin_tonic/internal/controllers/updateUser"
 	"gin_tonic/internal/middleware/logger"
 	"github.com/gin-gonic/gin"
 )
@@ -13,8 +14,9 @@ func Run() {
 
 	router.Use(logger.Middleware())
 
-	router.POST("/post", postFormData.Endpoint)
-	router.POST("/loginJSON", loginJson.Endpoint)
+	router.POST("/list-user", listUser.Endpoint)
+	router.POST("/create-user", createUser.Endpoint)
+	router.PUT("/update-user/:userId", updateUser.Endpoint)
 
 	err := router.Run(":8080")
 	if err != nil {
