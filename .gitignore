@@ -2,3 +2,4 @@
 .env
 cmd/app
 docs/*
+storage/logs/*.log

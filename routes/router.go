@@ -4,9 +4,12 @@ import (
 	"fmt"
 	"gin_tonic/docs"
 	"gin_tonic/internal/controllers/createUser"
+	"gin_tonic/internal/controllers/deleteUser"
 	"gin_tonic/internal/controllers/listUser"
 	"gin_tonic/internal/controllers/updateUser"
-	"gin_tonic/internal/middleware/logger"
+	"gin_tonic/internal/middleware/globalLoggerMiddleware"
+	"gin_tonic/internal/middleware/routeMiddleware"
+	"gin_tonic/internal/middleware/userGroupMiddleware"
 	"github.com/gin-gonic/gin"
 	_ "github.com/swaggo/files"
 	swaggerFiles "github.com/swaggo/files"
@@ -19,12 +22,18 @@ func Run() {
 	router := gin.New()
 
 	/** Глобальные middleware */
-	router.Use(logger.Middleware())
+	router.Use(globalLoggerMiddleware.Middleware())
 
 	/** Роуты */
-	router.GET("/list-user", listUser.Endpoint)
-	router.POST("/create-user", createUser.Endpoint)
-	router.PUT("/update-user/:userId", updateUser.Endpoint)
+	router.GET("user/list", routeMiddleware.Middleware(), listUser.Endpoint)
+
+	userGroup := router.Group("/user")
+	userGroup.Use(userGroupMiddleware.Middleware())
+	{
+		userGroup.POST("/", createUser.Endpoint)
+		userGroup.PUT("/:userId", updateUser.Endpoint)
+		userGroup.DELETE("/:userId", deleteUser.Endpoint)
+	}
 
 	/** Документация проекта */
 	swaggerInfo(docs.SwaggerInfo)

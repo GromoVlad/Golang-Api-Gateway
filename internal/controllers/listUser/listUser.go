@@ -1,12 +1,14 @@
 package listUser
 
 import (
+	"fmt"
 	"gin_tonic/internal/repository/userRepository"
 	"gin_tonic/internal/requests/listRepositoryRequest"
 	"gin_tonic/internal/response/baseResponse"
 	"gin_tonic/internal/response/listUserResponse"
+	"gin_tonic/internal/support/context"
+	"gin_tonic/internal/support/logger"
 	"github.com/gin-gonic/gin"
-	"net/http"
 )
 
 // Endpoint - Пагинированный список пользователей
@@ -19,15 +21,18 @@ import (
 // @Param  		 search  query	string	false	"Поиск по имени"
 // @Success      200  {object}  baseResponse.BaseResponse{data=listUserResponse.ListUserResponse} "desc"
 // @Router       /list-user [get]
-func Endpoint(context *gin.Context) {
-	request, err := listRepositoryRequest.GetRequest(context)
-	if err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
+func Endpoint(ginContext *gin.Context) {
+	response := context.Response{Context: ginContext}
+
+	request, err := listRepositoryRequest.GetRequest(ginContext)
+	response.CheckBadRequestError(err)
+
 	users, totalPage, err := userRepository.FindUsers(request)
-	if err != nil {
-		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	response.CheckInternalServerError(err)
+
+	err = logger.InfoLog("Список пользователей", fmt.Sprintf("%v", users))
+	response.CheckInternalServerError(err)
+	if response.Context.IsAborted() {
 		return
 	}
 
@@ -38,5 +43,5 @@ func Endpoint(context *gin.Context) {
 		TotalPage:   totalPage,
 	}
 	result := baseResponse.BaseResponse{Data: data, Success: true}
-	context.JSON(http.StatusOK, gin.H{"data": result.Data, "success": result.Success})
+	response.SuccessStatusOK(gin.H{"data": result.Data, "success": result.Success})
 }

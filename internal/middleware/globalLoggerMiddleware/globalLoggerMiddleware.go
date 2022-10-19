@@ -1,4 +1,4 @@
-package logger
+package globalLoggerMiddleware
 
 import (
 	"github.com/gin-gonic/gin"

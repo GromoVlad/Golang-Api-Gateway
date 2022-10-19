@@ -10,6 +10,7 @@ import (
 	"gin_tonic/internal/requests/createUserRequest"
 	"gin_tonic/internal/requests/listRepositoryRequest"
 	"gin_tonic/internal/requests/updateUserRequest"
+	"gin_tonic/internal/support/logger"
 	"time"
 )
 
@@ -30,6 +31,8 @@ func FindUsers(request listRepositoryRequest.Request) ([]user.User, int, error) 
 	var users []user.User
 	var err, errTotal error
 	var total int
+
+	err = logger.InfoLog("listRepositoryRequest", fmt.Sprintf("%v", request.Search))
 
 	if request.Search != "" {
 		query := "SELECT * FROM users.users WHERE name ilike $1 LIMIT $2 OFFSET $3"
@@ -106,6 +109,26 @@ func UpdateUser(request updateUserRequest.Request) error {
 	if err != nil {
 		return err
 	}
+	err = transaction.Commit()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func DeleteUser(userId int) error {
+	_, err := FindUser(userId)
+	if err != nil {
+		return err
+	}
+
+	transaction := DB.Connect().MustBegin()
+	_, err = transaction.NamedExec("DELETE FROM users.users WHERE user_id = :user_id", &user.User{UserId: userId})
+	if err != nil {
+		return err
+	}
+
 	err = transaction.Commit()
 	if err != nil {
 		return err
