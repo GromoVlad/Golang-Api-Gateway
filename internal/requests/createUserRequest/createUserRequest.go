@@ -1,6 +1,8 @@
 package createUserRequest
 
-import "github.com/gin-gonic/gin"
+import (
+	"gin_tonic/internal/support/localContext"
+)
 
 type Request struct {
 	Name     string `form:"name"                 json:"name"                 binding:"required"`
@@ -11,10 +13,9 @@ type Request struct {
 	HoReCaId int    `form:"horeca_id,omitempty"  json:"horeca_id,omitempty"  binding:"omitempty,number"`
 }
 
-func GetRequest(context *gin.Context) (Request, error) {
+func GetRequest(context localContext.LocalContext) Request {
 	var request Request
-	if err := context.ShouldBindJSON(&request); err != nil {
-		return request, err
-	}
-	return request, nil
+	err := context.Context.ShouldBindJSON(&request)
+	context.CheckBadRequestError(err)
+	return request
 }

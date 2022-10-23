@@ -1,7 +1,7 @@
 package updateUserRequest
 
 import (
-	"github.com/gin-gonic/gin"
+	"gin_tonic/internal/support/localContext"
 	"strconv"
 )
 
@@ -16,12 +16,14 @@ type Request struct {
 	Url      string `form:"password_recovery_url,omitempty" json:"password_recovery_url,omitempty" binding:"omitempty,uri"`
 }
 
-func GetRequest(context *gin.Context) (Request, error) {
+func GetRequest(context localContext.LocalContext) Request {
 	var request Request
-	if err := context.ShouldBindJSON(&request); err != nil {
-		return request, err
-	}
-	userId := context.Param("userId")
-	request.UserId, _ = strconv.Atoi(userId)
-	return request, nil
+	err := context.Context.ShouldBindJSON(&request)
+	context.CheckBadRequestError(err)
+
+	userId := context.Context.Param("userId")
+	request.UserId, err = strconv.Atoi(userId)
+	context.CheckBadRequestError(err)
+
+	return request
 }

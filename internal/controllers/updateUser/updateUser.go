@@ -4,7 +4,7 @@ import (
 	"gin_tonic/internal/repository/userRepository"
 	"gin_tonic/internal/requests/updateUserRequest"
 	"gin_tonic/internal/response/baseResponse"
-	"gin_tonic/internal/support/context"
+	"gin_tonic/internal/support/localContext"
 	"github.com/gin-gonic/gin"
 )
 
@@ -18,18 +18,11 @@ import (
 // @Success      200  {object}  baseResponse.BaseResponse{data=baseResponse.Response} "desc"
 // @Router       /user/{userId} [put]
 func Endpoint(ginContext *gin.Context) {
-	response := context.Response{Context: ginContext}
-
-	request, err := updateUserRequest.GetRequest(ginContext)
-	response.CheckBadRequestError(err)
-
-	err = userRepository.UpdateUser(request)
-	response.CheckStatusConflictError(err)
-	if response.Context.IsAborted() {
-		return
-	}
+	context := localContext.LocalContext{Context: ginContext}
+	request := updateUserRequest.GetRequest(context)
+	userRepository.UpdateUser(context, request)
 
 	data := baseResponse.Response{Status: "Пользователь обновлен"}
 	result := baseResponse.BaseResponse{Data: data, Success: true}
-	response.SuccessStatusOK(gin.H{"data": result.Data, "success": result.Success})
+	context.SuccessStatusOK(gin.H{"data": result.Data, "success": result.Success})
 }

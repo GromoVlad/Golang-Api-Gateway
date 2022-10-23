@@ -6,7 +6,7 @@ import (
 	"gin_tonic/internal/requests/listRepositoryRequest"
 	"gin_tonic/internal/response/baseResponse"
 	"gin_tonic/internal/response/listUserResponse"
-	"gin_tonic/internal/support/context"
+	"gin_tonic/internal/support/localContext"
 	"gin_tonic/internal/support/logger"
 	"github.com/gin-gonic/gin"
 )
@@ -22,19 +22,10 @@ import (
 // @Success      200  {object}  baseResponse.BaseResponse{data=listUserResponse.ListUserResponse} "desc"
 // @Router       /list-user [get]
 func Endpoint(ginContext *gin.Context) {
-	response := context.Response{Context: ginContext}
-
-	request, err := listRepositoryRequest.GetRequest(ginContext)
-	response.CheckBadRequestError(err)
-
-	users, totalPage, err := userRepository.FindUsers(request)
-	response.CheckInternalServerError(err)
-
-	err = logger.InfoLog("Список пользователей", fmt.Sprintf("%v", users))
-	response.CheckInternalServerError(err)
-	if response.Context.IsAborted() {
-		return
-	}
+	context := localContext.LocalContext{Context: ginContext}
+	request := listRepositoryRequest.GetRequest(context)
+	users, totalPage := userRepository.FindUsers(context, request)
+	logger.InfoLog(context, "Список пользователей", fmt.Sprintf("%v", users))
 
 	data := listUserResponse.ListUserResponse{
 		Users:       users,
@@ -43,5 +34,5 @@ func Endpoint(ginContext *gin.Context) {
 		TotalPage:   totalPage,
 	}
 	result := baseResponse.BaseResponse{Data: data, Success: true}
-	response.SuccessStatusOK(gin.H{"data": result.Data, "success": result.Success})
+	context.SuccessStatusOK(gin.H{"data": result.Data, "success": result.Success})
 }

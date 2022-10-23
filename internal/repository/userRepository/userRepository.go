@@ -10,29 +10,28 @@ import (
 	"gin_tonic/internal/requests/createUserRequest"
 	"gin_tonic/internal/requests/listRepositoryRequest"
 	"gin_tonic/internal/requests/updateUserRequest"
+	"gin_tonic/internal/support/localContext"
 	"gin_tonic/internal/support/logger"
 	"time"
 )
 
-func FindUser(userId int) (user.User, error) {
+func FindUser(context localContext.LocalContext, userId int) user.User {
 	var findUser user.User
 	_ = DB.Connect().Get(&findUser, "SELECT * FROM users.users WHERE user_id = $1", userId)
 	if findUser.UserId == 0 {
-		err := errors.New(fmt.Sprintf(
-			"Пользователь с идентификатором %d не зарегистрирован в системе",
-			userId,
-		))
-		return findUser, err
+		context.CheckNotFoundError(
+			errors.New(fmt.Sprintf("Пользователь с идентификатором %d не зарегистрирован в системе", userId)),
+		)
 	}
-	return findUser, nil
+	return findUser
 }
 
-func FindUsers(request listRepositoryRequest.Request) ([]user.User, int, error) {
+func FindUsers(context localContext.LocalContext, request listRepositoryRequest.Request) ([]user.User, int) {
 	var users []user.User
 	var err, errTotal error
 	var total int
 
-	err = logger.InfoLog("listRepositoryRequest", fmt.Sprintf("%v", request.Search))
+	logger.InfoLog(context, "listRepositoryRequest", fmt.Sprintf("%v", request.Search))
 
 	if request.Search != "" {
 		query := "SELECT * FROM users.users WHERE name ilike $1 LIMIT $2 OFFSET $3"
@@ -46,22 +45,20 @@ func FindUsers(request listRepositoryRequest.Request) ([]user.User, int, error) 
 		errTotal = DB.Connect().QueryRow("SELECT COUNT(user_id) AS total FROM users.users").Scan(&total)
 	}
 
-	if err != nil || errTotal != nil {
-		return users, total, err
-	}
+	context.CheckInternalServerError(err)
+	context.CheckInternalServerError(errTotal)
 
 	totalPage := calcTotalPage(request.Limit, total)
 
-	return users, totalPage, nil
+	return users, totalPage
 }
 
-func CreateUser(request createUserRequest.Request) error {
+func CreateUser(context localContext.LocalContext, request createUserRequest.Request) {
 	var findUser user.User
 	if request.Email != "" {
 		_ = DB.Connect().Get(&findUser, "SELECT user_id FROM users.users WHERE email = $1", request.Email)
 		if findUser.UserId != 0 {
-			err := errors.New("Пользователь с email " + request.Email + " уже зарегистрирован в системе")
-			return err
+			context.CheckAlreadyExistsError(errors.New("Пользователь с email " + request.Email + " уже зарегистрирован в системе"))
 		}
 	}
 
@@ -82,59 +79,38 @@ func CreateUser(request createUserRequest.Request) error {
 			UpdatedAt:           sql.NullTime{},
 		},
 	)
+	context.CheckStatusConflictError(err)
 
-	if err != nil {
-		return err
-	}
 	err = transaction.Commit()
-	if err != nil {
-		return err
-	}
-	return nil
+	context.CheckInternalServerError(err)
 }
 
-func UpdateUser(request updateUserRequest.Request) error {
-	findUser, err := FindUser(request.UserId)
-	if err != nil {
-		return err
-	}
+func UpdateUser(context localContext.LocalContext, request updateUserRequest.Request) {
+	findUser := FindUser(context, request.UserId)
+
 	mappingUser(&findUser, request)
+
 	transaction := DB.Connect().MustBegin()
-	_, err = transaction.NamedExec(
+	_, err := transaction.NamedExec(
 		"UPDATE users.users SET updated_at = :updated_at, name = :name, role_id = :role_id, "+
 			"phone = :phone, password = :password, email = :email, horeca_id = :horeca_id, "+
 			"password_recovery_url = :password_recovery_url WHERE user_id = :user_id",
 		&findUser,
 	)
-	if err != nil {
-		return err
-	}
-	err = transaction.Commit()
-	if err != nil {
-		return err
-	}
+	context.CheckStatusConflictError(err)
 
-	return nil
+	err = transaction.Commit()
+	context.CheckInternalServerError(err)
 }
 
-func DeleteUser(userId int) error {
-	_, err := FindUser(userId)
-	if err != nil {
-		return err
-	}
+func DeleteUser(context localContext.LocalContext, userId int) {
+	FindUser(context, userId)
 
 	transaction := DB.Connect().MustBegin()
-	_, err = transaction.NamedExec("DELETE FROM users.users WHERE user_id = :user_id", &user.User{UserId: userId})
-	if err != nil {
-		return err
-	}
-
+	_, err := transaction.NamedExec("DELETE FROM users.users WHERE user_id = :user_id", &user.User{UserId: userId})
+	context.CheckStatusConflictError(err)
 	err = transaction.Commit()
-	if err != nil {
-		return err
-	}
-
-	return nil
+	context.CheckInternalServerError(err)
 }
 
 func mappingUser(user *user.User, request updateUserRequest.Request) {

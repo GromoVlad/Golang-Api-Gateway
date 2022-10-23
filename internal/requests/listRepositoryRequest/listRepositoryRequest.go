@@ -1,6 +1,8 @@
 package listRepositoryRequest
 
-import "github.com/gin-gonic/gin"
+import (
+	"gin_tonic/internal/support/localContext"
+)
 
 type Request struct {
 	Page   int    `form:"page,omitempty"  json:"page,omitempty"   binding:"omitempty,number"`
@@ -9,11 +11,12 @@ type Request struct {
 	Offset int
 }
 
-func GetRequest(context *gin.Context) (Request, error) {
+func GetRequest(context localContext.LocalContext) Request {
 	var request Request
-	if err := context.ShouldBindQuery(&request); err != nil {
-		return request, err
-	}
+
+	err := context.Context.ShouldBindQuery(&request)
+	context.CheckBadRequestError(err)
+
 	if request.Page == 0 {
 		request.Page = 1
 	}
@@ -21,5 +24,5 @@ func GetRequest(context *gin.Context) (Request, error) {
 		request.Limit = 10
 	}
 	request.Offset = (request.Page - 1) * request.Limit
-	return request, nil
+	return request
 }

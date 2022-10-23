@@ -23,6 +23,7 @@ func Run() {
 
 	/** Глобальные middleware */
 	router.Use(globalLoggerMiddleware.Middleware())
+	router.Use(gin.Recovery())
 
 	/** Роуты */
 	router.GET("user/list", routeMiddleware.Middleware(), listUser.Endpoint)

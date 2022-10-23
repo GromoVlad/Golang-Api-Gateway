@@ -4,7 +4,7 @@ import (
 	"gin_tonic/internal/repository/userRepository"
 	"gin_tonic/internal/requests/createUserRequest"
 	"gin_tonic/internal/response/baseResponse"
-	"gin_tonic/internal/support/context"
+	"gin_tonic/internal/support/localContext"
 	"github.com/gin-gonic/gin"
 )
 
@@ -17,18 +17,13 @@ import (
 // @Success      201  {object}  baseResponse.BaseResponse{data=baseResponse.Response} "desc"
 // @Router       /user [post]
 func Endpoint(ginContext *gin.Context) {
-	response := context.Response{Context: ginContext}
+	context := localContext.LocalContext{Context: ginContext}
 
-	request, err := createUserRequest.GetRequest(ginContext)
-	response.CheckBadRequestError(err)
+	request := createUserRequest.GetRequest(context)
 
-	err = userRepository.CreateUser(request)
-	response.CheckStatusConflictError(err)
-	if response.Context.IsAborted() {
-		return
-	}
+	userRepository.CreateUser(context, request)
 
 	data := baseResponse.Response{Status: "Пользователь создан"}
 	result := baseResponse.BaseResponse{Data: data, Success: true}
-	response.SuccessStatusCreated(gin.H{"data": result.Data, "success": result.Success})
+	context.SuccessStatusCreated(gin.H{"data": result.Data, "success": result.Success})
 }

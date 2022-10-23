@@ -3,7 +3,7 @@ package deleteUser
 import (
 	"gin_tonic/internal/repository/userRepository"
 	"gin_tonic/internal/response/baseResponse"
-	"gin_tonic/internal/support/context"
+	"gin_tonic/internal/support/localContext"
 	"github.com/gin-gonic/gin"
 	"strconv"
 )
@@ -17,18 +17,14 @@ import (
 // @Success      200  {object}  baseResponse.BaseResponse{data=baseResponse.Response} "desc"
 // @Router       /user/{userId} [delete]
 func Endpoint(ginContext *gin.Context) {
-	response := context.Response{Context: ginContext}
+	context := localContext.LocalContext{Context: ginContext}
 
 	userId, err := strconv.Atoi(ginContext.Param("userId"))
-	response.CheckBadRequestError(err)
+	context.CheckBadRequestError(err)
 
-	err = userRepository.DeleteUser(userId)
-	response.CheckStatusConflictError(err)
-	if response.Context.IsAborted() {
-		return
-	}
+	userRepository.DeleteUser(context, userId)
 
 	data := baseResponse.Response{Status: "Пользователь удален"}
 	result := baseResponse.BaseResponse{Data: data, Success: true}
-	response.SuccessStatusOK(gin.H{"data": result.Data, "success": result.Success})
+	context.SuccessStatusOK(gin.H{"data": result.Data, "success": result.Success})
 }
