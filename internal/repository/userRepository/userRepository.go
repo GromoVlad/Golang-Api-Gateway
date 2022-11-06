@@ -5,11 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"gin_tonic/internal/database/DB"
-	"gin_tonic/internal/enums"
+	"gin_tonic/internal/enums/messenger"
 	"gin_tonic/internal/models/user"
-	"gin_tonic/internal/requests/createUserRequest"
-	"gin_tonic/internal/requests/listRepositoryRequest"
-	"gin_tonic/internal/requests/updateUserRequest"
+	"gin_tonic/internal/requests/user/createUserRequest"
+	"gin_tonic/internal/requests/user/listRepositoryRequest"
+	"gin_tonic/internal/requests/user/updateUserRequest"
 	"gin_tonic/internal/support/localContext"
 	"gin_tonic/internal/support/logger"
 	"time"
@@ -19,7 +19,7 @@ func FindUser(context localContext.LocalContext, userId int) user.User {
 	var findUser user.User
 	_ = DB.Connect().Get(&findUser, "SELECT * FROM users.users WHERE user_id = $1", userId)
 	if findUser.UserId == 0 {
-		context.CheckNotFoundError(
+		context.NotFoundError(
 			errors.New(fmt.Sprintf("Пользователь с идентификатором %d не зарегистрирован в системе", userId)),
 		)
 	}
@@ -45,8 +45,8 @@ func FindUsers(context localContext.LocalContext, request listRepositoryRequest.
 		errTotal = DB.Connect().QueryRow("SELECT COUNT(user_id) AS total FROM users.users").Scan(&total)
 	}
 
-	context.CheckInternalServerError(err)
-	context.CheckInternalServerError(errTotal)
+	context.InternalServerError(err)
+	context.InternalServerError(errTotal)
 
 	totalPage := calcTotalPage(request.Limit, total)
 
@@ -58,31 +58,31 @@ func CreateUser(context localContext.LocalContext, request createUserRequest.Req
 	if request.Email != "" {
 		_ = DB.Connect().Get(&findUser, "SELECT user_id FROM users.users WHERE email = $1", request.Email)
 		if findUser.UserId != 0 {
-			context.CheckAlreadyExistsError(errors.New("Пользователь с email " + request.Email + " уже зарегистрирован в системе"))
+			context.AlreadyExistsError(errors.New("Пользователь с email " + request.Email + " уже зарегистрирован в системе"))
 		}
 	}
 
 	transaction := DB.Connect().MustBegin()
 	_, err := transaction.NamedExec(
-		"INSERT INTO users.users (name, role_id, phone, password, email, horeca_id, password_recovery_url, messenger, created_at, updated_at) "+
-			"VALUES (:name, :role_id, :phone, :password, :email, :horeca_id, :password_recovery_url, :messenger, :created_at, :updated_at)",
+		"INSERT INTO users.users (name, role_id, phone, password, email, venue_id, password_recovery_url, messenger, created_at, updated_at) "+
+			"VALUES (:name, :role_id, :phone, :password, :email, :venue_id, :password_recovery_url, :messenger, :created_at, :updated_at)",
 		&user.User{
 			Name:                request.Name,
 			RoleId:              request.RoleId,
 			Phone:               sql.NullString{String: request.Phone, Valid: request.Phone != ""},
-			Password:            sql.NullString{String: request.Password, Valid: request.Password != ""},
-			Email:               sql.NullString{String: request.Email, Valid: request.Email != ""},
-			HoReCaId:            sql.NullInt16{Int16: int16(request.HoReCaId), Valid: request.HoReCaId != 0},
+			Password:            request.Password,
+			Email:               request.Email,
+			VenueId:             sql.NullInt16{Int16: int16(request.VenueId), Valid: request.VenueId != 0},
 			PasswordRecoveryUrl: sql.NullString{},
-			Messenger:           sql.NullString{String: enums.TELEGRAM, Valid: true},
+			Messenger:           sql.NullString{String: messenger.TELEGRAM, Valid: true},
 			CreatedAt:           sql.NullTime{Time: time.Now(), Valid: true},
 			UpdatedAt:           sql.NullTime{},
 		},
 	)
-	context.CheckStatusConflictError(err)
+	context.StatusConflictError(err)
 
 	err = transaction.Commit()
-	context.CheckInternalServerError(err)
+	context.InternalServerError(err)
 }
 
 func UpdateUser(context localContext.LocalContext, request updateUserRequest.Request) {
@@ -93,14 +93,14 @@ func UpdateUser(context localContext.LocalContext, request updateUserRequest.Req
 	transaction := DB.Connect().MustBegin()
 	_, err := transaction.NamedExec(
 		"UPDATE users.users SET updated_at = :updated_at, name = :name, role_id = :role_id, "+
-			"phone = :phone, password = :password, email = :email, horeca_id = :horeca_id, "+
+			"phone = :phone, password = :password, email = :email, venue_id = :venue_id, "+
 			"password_recovery_url = :password_recovery_url WHERE user_id = :user_id",
 		&findUser,
 	)
-	context.CheckStatusConflictError(err)
+	context.StatusConflictError(err)
 
 	err = transaction.Commit()
-	context.CheckInternalServerError(err)
+	context.InternalServerError(err)
 }
 
 func DeleteUser(context localContext.LocalContext, userId int) {
@@ -108,9 +108,22 @@ func DeleteUser(context localContext.LocalContext, userId int) {
 
 	transaction := DB.Connect().MustBegin()
 	_, err := transaction.NamedExec("DELETE FROM users.users WHERE user_id = :user_id", &user.User{UserId: userId})
-	context.CheckStatusConflictError(err)
+	context.StatusConflictError(err)
 	err = transaction.Commit()
-	context.CheckInternalServerError(err)
+	context.InternalServerError(err)
+}
+
+func FindOrFailByEmail(context localContext.LocalContext, email string) user.User {
+	var findUser user.User
+	if email != "" {
+		_ = DB.Connect().Get(&findUser, "SELECT * FROM users.users WHERE email = $1", email)
+		if findUser.UserId == 0 {
+			context.NotFoundError(
+				errors.New(fmt.Sprintf("Пользователь с email %s не зарегистрирован в системе", email)),
+			)
+		}
+	}
+	return findUser
 }
 
 func mappingUser(user *user.User, request updateUserRequest.Request) {
@@ -119,7 +132,10 @@ func mappingUser(user *user.User, request updateUserRequest.Request) {
 		user.Name = request.Name
 	}
 	if request.Email != "" {
-		user.Email = sql.NullString{String: request.Email, Valid: true}
+		user.Email = request.Email
+	}
+	if request.Password != "" {
+		user.Password = request.Password
 	}
 	if request.RoleId != 0 {
 		user.RoleId = request.RoleId
@@ -127,11 +143,8 @@ func mappingUser(user *user.User, request updateUserRequest.Request) {
 	if request.Phone != "" {
 		user.Phone = sql.NullString{String: request.Phone, Valid: true}
 	}
-	if request.Password != "" {
-		user.Password = sql.NullString{String: request.Password, Valid: true}
-	}
-	if request.HoReCaId != 0 {
-		user.HoReCaId = sql.NullInt16{Int16: int16(request.HoReCaId), Valid: true}
+	if request.VenueId != 0 {
+		user.VenueId = sql.NullInt16{Int16: int16(request.VenueId), Valid: true}
 	}
 	if request.Url != "" {
 		user.PasswordRecoveryUrl = sql.NullString{String: request.Url, Valid: true}

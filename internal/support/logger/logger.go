@@ -60,7 +60,7 @@ func log(context localContext.LocalContext, header string, message string, level
 		"[" + timeNow.Format(`01-02-2006 15:04:05`) + "] [level: " + level +
 			"] [header: " + header + "]\n" + message + "\n",
 	)
-	context.CheckInternalServerError(err)
+	context.InternalServerError(err)
 }
 
 func findOrCreateLogFile(context localContext.LocalContext) *os.File {
@@ -77,7 +77,7 @@ func findOrCreateLogFile(context localContext.LocalContext) *os.File {
 	} else {
 		logFile, err = os.Create(logFilePath)
 	}
-	context.CheckInternalServerError(err)
+	context.InternalServerError(err)
 
 	return logFile
 }
