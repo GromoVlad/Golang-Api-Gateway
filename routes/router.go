@@ -11,16 +11,16 @@ import (
 	"gin_tonic/internal/controllers/user/registrationUser"
 	"gin_tonic/internal/controllers/user/updateUser"
 	"gin_tonic/internal/middleware/authSupportRole"
-	"gin_tonic/internal/middleware/authWaiterRole"
 	"gin_tonic/internal/middleware/globalLoggerMiddleware"
 	"gin_tonic/internal/middleware/userGroupMiddleware"
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	_ "github.com/swaggo/files"
 	swaggerFiles "github.com/swaggo/files"
 	_ "github.com/swaggo/gin-swagger"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"github.com/swaggo/swag"
-	"os"
+	"log"
 )
 
 func Run() {
@@ -30,6 +30,10 @@ func Run() {
 	router.Use(globalLoggerMiddleware.Middleware())
 	/** Восстановление после ошибки */
 	router.Use(gin.Recovery())
+	/** Подгружаем данные из .env */
+	if err := godotenv.Load(); err != nil {
+		log.Fatalf("Ошибка загрузки переменных из .env: %s", err.Error())
+	}
 
 	/** Роуты */
 	api(router)
@@ -38,7 +42,7 @@ func Run() {
 	swaggerInfo(docs.SwaggerInfo)
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	err := router.Run(":8081")
+	err := router.Run(":8082")
 	if err != nil {
 		fmt.Println("Произошла ошибка", err)
 	}
@@ -47,6 +51,7 @@ func Run() {
 func api(router *gin.Engine) {
 	/** Роуты */
 	router.GET("user/list", authSupportRole.Middleware(), listUser.Endpoint)
+	//router.GET("user/list", listUser.Endpoint)
 
 	userGroup := router.Group("/user")
 	userGroup.Use(userGroupMiddleware.Middleware())
@@ -62,14 +67,15 @@ func api(router *gin.Engine) {
 		authGroup.POST("/refresh-token", refreshToken.Endpoint)
 	}
 
-	router.POST("/some-action", authWaiterRole.Middleware(), someAction.Endpoint)
+	router.POST("/some-action", someAction.Endpoint)
+	// router.POST("/some-action", authWaiterRole.Middleware(), someAction.Endpoint)
 }
 
 func swaggerInfo(swaggerInfo *swag.Spec) {
-	swaggerInfo.Title = os.Getenv("PROJECT_TITLE")
-	swaggerInfo.Description = os.Getenv("PROJECT_DESCRIPTION")
-	swaggerInfo.Version = os.Getenv("PROJECT_VERSION")
-	swaggerInfo.Host = os.Getenv("PROJECT_HOST")
-	swaggerInfo.BasePath = os.Getenv("PROJECT_BASE_PATH")
+	swaggerInfo.Title = "Gin-Tonic"
+	swaggerInfo.Description = "Минифреймворк из модулей Gin,Sqlx, Goose, Swaggo"
+	swaggerInfo.Version = "1.0"
+	swaggerInfo.Host = "localhost:8082"
+	swaggerInfo.BasePath = "/"
 	swaggerInfo.Schemes = []string{"http"}
 }

@@ -10,7 +10,7 @@ type Request struct {
 	RoleId   int    `form:"role_id"              json:"role_id"              binding:"required,number"`
 	Password string `form:"password"             json:"password"             binding:"required,alphanum"`
 	Phone    string `form:"phone,omitempty"      json:"phone,omitempty"      binding:"omitempty,numeric"`
-	VenueId  int    `form:"venue_id,omitempty"  json:"venue_id,omitempty"  binding:"omitempty,number"`
+	VenueId  int    `form:"venue_id,omitempty"   json:"venue_id,omitempty"   binding:"omitempty,number"`
 }
 
 func GetRequest(context localContext.LocalContext) Request {

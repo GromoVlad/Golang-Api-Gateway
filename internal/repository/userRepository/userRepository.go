@@ -11,7 +11,7 @@ import (
 	"gin_tonic/internal/requests/user/listRepositoryRequest"
 	"gin_tonic/internal/requests/user/updateUserRequest"
 	"gin_tonic/internal/support/localContext"
-	"gin_tonic/internal/support/logger"
+	_ "github.com/lib/pq"
 	"time"
 )
 
@@ -30,8 +30,6 @@ func FindUsers(context localContext.LocalContext, request listRepositoryRequest.
 	var users []user.User
 	var err, errTotal error
 	var total int
-
-	logger.InfoLog(context, "listRepositoryRequest", fmt.Sprintf("%v", request.Search))
 
 	if request.Search != "" {
 		query := "SELECT * FROM users.users WHERE name ilike $1 LIMIT $2 OFFSET $3"

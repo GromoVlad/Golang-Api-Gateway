@@ -8,3 +8,8 @@ type ListUserResponse struct {
 	TotalPage   int         `json:"total_page" example:"100"`
 	Users       []user.User `json:"users"`
 }
+
+type BaseResponse struct {
+	Data    ListUserResponse `json:"data"`
+	Success bool             `json:"success"`
+}

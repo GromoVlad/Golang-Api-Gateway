@@ -11,3 +11,5 @@ migration-create:
 	$(MAKE) migration-create -C migration
 documentation-create:
 	swag init -g cmd/main.go
+test:
+	go test ./tests/...

@@ -5,8 +5,8 @@ import (
 )
 
 type BaseResponse struct {
-	Data    any  `json:"data"`
-	Success bool `json:"success"`
+	Data    Response `json:"data"`
+	Success bool     `json:"success"`
 }
 
 type Response struct {

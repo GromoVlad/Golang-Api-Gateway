@@ -2,7 +2,6 @@ package logger
 
 import (
 	"fmt"
-	"gin_tonic/internal/support/localContext"
 	"os"
 	"path/filepath"
 	"time"
@@ -19,51 +18,55 @@ const (
 	DEBUG     = "DEBUG"
 )
 
-func EmergencyLog(context localContext.LocalContext, header string, message string) {
-	log(context, header, message, EMERGENCY)
+func EmergencyLog(header string, message string) {
+	log(header, message, EMERGENCY)
 }
 
-func AlertLog(context localContext.LocalContext, header string, message string) {
-	log(context, header, message, ALERT)
+func AlertLog(header string, message string) {
+	log(header, message, ALERT)
 }
 
-func CriticalLog(context localContext.LocalContext, header string, message string) {
-	log(context, header, message, CRITICAL)
+func CriticalLog(header string, message string) {
+	log(header, message, CRITICAL)
 }
 
-func ErrorLog(context localContext.LocalContext, header string, message string) {
-	log(context, header, message, ERROR)
+func ErrorLog(header string, message string) {
+	log(header, message, ERROR)
 }
 
-func WarningLog(context localContext.LocalContext, header string, message string) {
-	log(context, header, message, WARNING)
+func WarningLog(header string, message string) {
+	log(header, message, WARNING)
 }
 
-func NoticeLog(context localContext.LocalContext, header string, message string) {
-	log(context, header, message, NOTICE)
+func NoticeLog(header string, message string) {
+	log(header, message, NOTICE)
 }
 
-func InfoLog(context localContext.LocalContext, header string, message string) {
-	log(context, header, message, INFO)
+func InfoLog(header string, message string) {
+	log(header, message, INFO)
 }
 
-func DebugLog(context localContext.LocalContext, header string, message string) {
-	log(context, header, message, DEBUG)
+func DebugLog(header string, message string) {
+	log(header, message, DEBUG)
 }
 
-func log(context localContext.LocalContext, header string, message string, level string) {
-	logFile := findOrCreateLogFile(context)
+func log(header string, message string, level string) {
+	logFile := findOrCreateLogFile()
 	defer logFile.Close()
 
 	timeNow := time.Now()
 	_, err := logFile.WriteString(
-		"[" + timeNow.Format(`01-02-2006 15:04:05`) + "] [level: " + level +
-			"] [header: " + header + "]\n" + message + "\n",
+		"[" + timeNow.Format(`02-01-2006 15:04:05`) + "] " +
+			"[level: " + level + "] " +
+			"[header: " + header + "]\n" +
+			message + "\n",
 	)
-	context.InternalServerError(err)
+	if err != nil {
+		fmt.Printf("Ошибка записи в файл логирования: %s\n", err.Error())
+	}
 }
 
-func findOrCreateLogFile(context localContext.LocalContext) *os.File {
+func findOrCreateLogFile() *os.File {
 	var logFile *os.File
 	var err error
 
@@ -77,7 +80,10 @@ func findOrCreateLogFile(context localContext.LocalContext) *os.File {
 	} else {
 		logFile, err = os.Create(logFilePath)
 	}
-	context.InternalServerError(err)
+
+	if err != nil {
+		fmt.Printf("Ошибка создания/загрузки файла логирования: %s\n", err.Error())
+	}
 
 	return logFile
 }

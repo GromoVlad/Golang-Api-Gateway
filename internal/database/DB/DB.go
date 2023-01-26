@@ -3,7 +3,6 @@ package DB
 import (
 	"fmt"
 	"github.com/jmoiron/sqlx"
-	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	"log"
 	"os"
@@ -20,10 +19,6 @@ type ConfigDatabase struct {
 }
 
 var Connect = func() *sqlx.DB {
-	if err := godotenv.Load(); err != nil {
-		log.Fatalf("error loading env variables: %s", err.Error())
-	}
-
 	configDatabase := ConfigDatabase{
 		DriverName: os.Getenv("DB_CONNECTION"),
 		Host:       os.Getenv("DB_HOST"),

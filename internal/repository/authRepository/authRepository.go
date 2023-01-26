@@ -40,3 +40,11 @@ func WriteRefreshJwtToken(context localContext.LocalContext, token string, userI
 	err = transaction.Commit()
 	context.InternalServerError(err)
 }
+
+func DeleteTokens(context localContext.LocalContext, userId int) {
+	transaction := DB.Connect().MustBegin()
+	_, err := transaction.NamedExec("DELETE FROM auth.jwt_tokens WHERE user_id = :user_id", &jwtToken.JwtToken{UserId: userId})
+	context.StatusConflictError(err)
+	err = transaction.Commit()
+	context.InternalServerError(err)
+}

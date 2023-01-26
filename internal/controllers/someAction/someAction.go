@@ -9,10 +9,9 @@ import (
 // SomeAction godoc
 // @Summary      Какое-то действие
 // @Tags         SomeAction
-// @Security 	 BearerToken
 // @Produce      json
 // @Router       /some-action [post]
 func Endpoint(ginContext *gin.Context) {
 	context := localContext.LocalContext{Context: ginContext}
-	context.StatusOK(gin.H{"data": "Удачное завершение", "success": true})
+	context.StatusOK(gin.H{"success": true})
 }
