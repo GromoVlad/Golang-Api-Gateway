@@ -51,12 +51,12 @@ func FindUsers(context localContext.LocalContext, request listRepositoryRequest.
 	return users, totalPage
 }
 
-func CreateUser(context localContext.LocalContext, request createUserRequest.Request) {
+func CreateUser(context localContext.LocalContext, dto createUserRequest.CreateUserDTO) {
 	var findUser user.User
-	if request.Email != "" {
-		_ = DB.Connect().Get(&findUser, "SELECT user_id FROM users.users WHERE email = $1", request.Email)
+	if dto.Email != "" {
+		_ = DB.Connect().Get(&findUser, "SELECT user_id FROM users.users WHERE email = $1", dto.Email)
 		if findUser.UserId != 0 {
-			context.AlreadyExistsError(errors.New("Пользователь с email " + request.Email + " уже зарегистрирован в системе"))
+			context.AlreadyExistsError(errors.New("Пользователь с email " + dto.Email + " уже зарегистрирован в системе"))
 		}
 	}
 
@@ -65,12 +65,12 @@ func CreateUser(context localContext.LocalContext, request createUserRequest.Req
 		"INSERT INTO users.users (name, role_id, phone, password, email, venue_id, password_recovery_url, messenger, created_at, updated_at) "+
 			"VALUES (:name, :role_id, :phone, :password, :email, :venue_id, :password_recovery_url, :messenger, :created_at, :updated_at)",
 		&user.User{
-			Name:                request.Name,
-			RoleId:              request.RoleId,
-			Phone:               sql.NullString{String: request.Phone, Valid: request.Phone != ""},
-			Password:            request.Password,
-			Email:               request.Email,
-			VenueId:             sql.NullInt16{Int16: int16(request.VenueId), Valid: request.VenueId != 0},
+			Name:                dto.Name,
+			RoleId:              dto.RoleId,
+			Phone:               sql.NullString{String: dto.Phone, Valid: dto.Phone != ""},
+			Password:            dto.Password,
+			Email:               dto.Email,
+			VenueId:             sql.NullInt16{Int16: int16(dto.VenueId), Valid: dto.VenueId != 0},
 			PasswordRecoveryUrl: sql.NullString{},
 			Messenger:           sql.NullString{String: messenger.TELEGRAM, Valid: true},
 			CreatedAt:           sql.NullTime{Time: time.Now(), Valid: true},

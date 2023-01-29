@@ -19,10 +19,10 @@ import (
 // @Router       /user/registration [post]
 func Endpoint(ginContext *gin.Context) {
 	context := localContext.LocalContext{Context: ginContext}
-	request := createUserRequest.GetRequest(context)
+	dto := createUserRequest.GetRequest(context)
+	dto.Password = passwordService.GetPasswordHash(context, dto.Password)
 
-	request.Password = passwordService.GetPasswordHash(context, request.Password)
-	userRepository.CreateUser(context, request)
+	userRepository.CreateUser(context, dto)
 
 	data := baseResponse.Response{Status: "Пользователь создан"}
 	result := baseResponse.BaseResponse{Data: data, Success: true}

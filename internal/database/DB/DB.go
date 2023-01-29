@@ -29,6 +29,8 @@ var Connect = func() *sqlx.DB {
 		SSLMode:    os.Getenv("DB_SSL_MODE"),
 	}
 
+	fmt.Printf("%v \n", configDatabase)
+
 	db, err := sqlx.Connect(
 		configDatabase.DriverName,
 		fmt.Sprintf(

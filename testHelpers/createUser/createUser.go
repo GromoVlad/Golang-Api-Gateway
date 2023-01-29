@@ -13,7 +13,7 @@ const PASSWORD = "12345678"
 const EMAIL = "TestUser@yandex.ru"
 
 func CreateUser(context localContext.LocalContext) {
-	request := createUserRequest.Request{
+	dto := createUserRequest.CreateUserDTO{
 		Name:     USERNAME,
 		Email:    EMAIL,
 		RoleId:   role.SUPPORT,
@@ -22,7 +22,7 @@ func CreateUser(context localContext.LocalContext) {
 		VenueId:  100,
 	}
 
-	password := passwordService.GetPasswordHash(context, request.Password)
-	request.Password = password
-	userRepository.CreateUser(context, request)
+	password := passwordService.GetPasswordHash(context, dto.Password)
+	dto.Password = password
+	userRepository.CreateUser(context, dto)
 }

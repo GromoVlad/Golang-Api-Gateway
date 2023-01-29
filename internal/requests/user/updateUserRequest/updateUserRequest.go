@@ -12,7 +12,7 @@ type Request struct {
 	RoleId   int    `form:"role_id,omitempty"               json:"role_id,omitempty"               binding:"omitempty,number"`
 	Phone    string `form:"phone,omitempty"                 json:"phone,omitempty"                 binding:"omitempty,numeric"`
 	Password string `form:"password,omitempty"              json:"password,omitempty"              binding:"omitempty,alphanum"`
-	VenueId  int    `form:"venue_id,omitempty"             json:"venue_id,omitempty"             binding:"omitempty,number"`
+	VenueId  int    `form:"venue_id,omitempty"              json:"venue_id,omitempty"              binding:"omitempty,number"`
 	Url      string `form:"password_recovery_url,omitempty" json:"password_recovery_url,omitempty" binding:"omitempty,uri"`
 }
 

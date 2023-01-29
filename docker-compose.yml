@@ -1,0 +1,37 @@
+version: '3'
+services:
+  app:
+    container_name: gin_tonic
+    build: .
+    ports:
+      - "8082:8082"
+    restart: on-failure
+    volumes:
+      - .:/usr/src/app/
+    command: go run cmd/main.go -b 0.0.0.0
+    depends_on:
+      - postgres
+    networks:
+      - app-network
+    env_file:
+      - .env
+  postgres:
+    image: postgres
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: gin_tonic_two
+    ports:
+      - "1111:5432"
+    networks:
+      - app-network
+    volumes:
+      - postgres-data:/var/lib/postgresql/data/
+    env_file:
+      - .env
+
+volumes:
+  postgres-data:
+
+networks:
+  app-network:
