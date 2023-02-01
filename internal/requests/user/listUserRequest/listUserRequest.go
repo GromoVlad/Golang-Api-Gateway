@@ -1,4 +1,4 @@
-package listRepositoryRequest
+package listUserRequest
 
 import (
 	"gin_tonic/internal/support/localContext"

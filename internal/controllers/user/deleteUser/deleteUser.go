@@ -14,7 +14,7 @@ import (
 // @Tags         Users
 // @Produce      json
 // @Param        userId  path  int  true  "Идентификатор пользователя"
-// @Success      200  {object}  baseResponse.BaseResponse{data=baseResponse.Response} "desc"
+/** @Success      200  {object}  baseResponse.BaseResponse{data=baseResponse.Response} "desc" */
 // @Router       /user/{userId} [delete]
 func Endpoint(ginContext *gin.Context) {
 	context := localContext.LocalContext{Context: ginContext}

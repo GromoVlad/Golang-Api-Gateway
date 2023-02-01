@@ -14,8 +14,8 @@ import (
 // @Summary      Регистрация пользователя
 // @Tags         Users
 // @Produce      json
-// @Param  		 RequestBody  body  createUserRequest.Request  true	"Тело запроса"
-// @Success      201  {object}  baseResponse.BaseResponse{data=baseResponse.Response} "desc"
+// @Param  		 RequestBody  body  createUserRequest.DTO  true	"Тело запроса"
+/** @Success      201  {object}  baseResponse.BaseResponse{data=baseResponse.Response} "desc" */
 // @Router       /user/registration [post]
 func Endpoint(ginContext *gin.Context) {
 	context := localContext.LocalContext{Context: ginContext}

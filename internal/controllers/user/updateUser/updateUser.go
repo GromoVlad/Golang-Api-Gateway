@@ -15,7 +15,7 @@ import (
 // @Produce      json
 // @Param        userId  path  int  true  "Идентификатор пользователя"
 // @Param  		 RequestBody  body  updateUserRequest.Request  true	"Тело запроса"
-// @Success      200  {object}  baseResponse.BaseResponse{data=baseResponse.Response} "desc"
+/** @Success      200  {object}  baseResponse.BaseResponse{data=baseResponse.Response} "desc" */
 // @Router       /user/{userId} [put]
 func Endpoint(ginContext *gin.Context) {
 	context := localContext.LocalContext{Context: ginContext}

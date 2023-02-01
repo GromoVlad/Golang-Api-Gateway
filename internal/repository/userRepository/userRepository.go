@@ -8,7 +8,7 @@ import (
 	"gin_tonic/internal/enums/messenger"
 	"gin_tonic/internal/models/user"
 	"gin_tonic/internal/requests/user/createUserRequest"
-	"gin_tonic/internal/requests/user/listRepositoryRequest"
+	"gin_tonic/internal/requests/user/listUserRequest"
 	"gin_tonic/internal/requests/user/updateUserRequest"
 	"gin_tonic/internal/support/localContext"
 	_ "github.com/lib/pq"
@@ -26,7 +26,7 @@ func FindUser(context localContext.LocalContext, userId int) user.User {
 	return findUser
 }
 
-func FindUsers(context localContext.LocalContext, request listRepositoryRequest.Request) ([]user.User, int) {
+func FindUsers(context localContext.LocalContext, request listUserRequest.Request) ([]user.User, int) {
 	var users []user.User
 	var err, errTotal error
 	var total int
@@ -51,7 +51,7 @@ func FindUsers(context localContext.LocalContext, request listRepositoryRequest.
 	return users, totalPage
 }
 
-func CreateUser(context localContext.LocalContext, dto createUserRequest.CreateUserDTO) {
+func CreateUser(context localContext.LocalContext, dto createUserRequest.DTO) {
 	var findUser user.User
 	if dto.Email != "" {
 		_ = DB.Connect().Get(&findUser, "SELECT user_id FROM users.users WHERE email = $1", dto.Email)

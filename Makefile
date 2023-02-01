@@ -1,15 +1,19 @@
 .PHONY: run
 run:
-	swag init -g cmd/main.go &&	go build -o cmd/app cmd/main.go && ./cmd/app
+	swag init -g cmd/main.go && docker-compose up && goose-i
 migration-status:
-	$(MAKE) migration-status -C migration
+	docker exec gin_tonic $(MAKE) migration-status -C migration
 migration-up:
-	$(MAKE) migration-up -C migration
+	docker exec gin_tonic $(MAKE) migration-up -C migration
 migration-down:
-	$(MAKE) migration-down -C migration
+	docker exec gin_tonic $(MAKE) migration-down -C migration
 migration-create:
-	$(MAKE) migration-create -C migration
+	docker exec gin_tonic $(MAKE) migration-create -C migration
 documentation-create:
 	swag init -g cmd/main.go
 test:
 	go test ./tests/...
+goose-i:
+	curl -fsSL \
+	    https://raw.githubusercontent.com/pressly/goose/master/install.sh |\
+	    sh

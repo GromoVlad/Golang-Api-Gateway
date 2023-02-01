@@ -11,6 +11,7 @@ services:
     command: go run cmd/main.go -b 0.0.0.0
     depends_on:
       - postgres
+      - books-service
     networks:
       - app-network
     env_file:
@@ -29,9 +30,41 @@ services:
       - postgres-data:/var/lib/postgresql/data/
     env_file:
       - .env
-
+  mcrsrv-book:
+    container_name: mcrsrv-book
+    build:
+      context: ./books
+    ports:
+      - "8083:8083"
+    restart: on-failure
+    volumes:
+      - ./books:/usr/src/app/
+    command: go run cmd/main.go -b 0.0.0.0
+    depends_on:
+      - postgres-book
+    networks:
+      app-network:
+        aliases:
+          - mcrsrv-book
+    env_file:
+      - ./books/.env
+  postgres-book:
+    image: postgres
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: book_db
+    ports:
+      - "1112:5432"
+    networks:
+      - app-network
+    volumes:
+      - postgres-data-book:/var/lib/postgresql/data/
+    env_file:
+      - books/.env
 volumes:
   postgres-data:
-
+  postgres-data-book:
 networks:
   app-network:
+    driver: bridge

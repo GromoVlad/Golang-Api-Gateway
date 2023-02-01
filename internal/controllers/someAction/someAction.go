@@ -1,7 +1,6 @@
 package someAction
 
 import (
-	"gin_tonic/internal/database/DB"
 	"gin_tonic/internal/support/localContext"
 	"github.com/gin-gonic/gin"
 )
@@ -14,6 +13,5 @@ import (
 // @Router       /some-action [post]
 func Endpoint(ginContext *gin.Context) {
 	context := localContext.LocalContext{Context: ginContext}
-	DB.Connect()
 	context.StatusOK(gin.H{"success": true})
 }

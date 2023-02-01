@@ -3,6 +3,7 @@ package routes
 import (
 	"fmt"
 	"gin_tonic/docs"
+	"gin_tonic/internal/controllers/apiGateway/book/findBook"
 	"gin_tonic/internal/controllers/auth/login"
 	"gin_tonic/internal/controllers/auth/refreshToken"
 	"gin_tonic/internal/controllers/someAction"
@@ -69,6 +70,11 @@ func api(router *gin.Engine) {
 
 	router.POST("/some-action", someAction.Endpoint)
 	// router.POST("/some-action", authWaiterRole.Middleware(), someAction.Endpoint)
+
+	apiGatewayBook := router.Group("/api-gateway/book")
+	{
+		apiGatewayBook.GET("/:bookId", findBook.Endpoint)
+	}
 }
 
 func swaggerInfo(swaggerInfo *swag.Spec) {

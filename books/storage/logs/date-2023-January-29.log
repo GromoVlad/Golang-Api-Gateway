@@ -1,0 +1,20 @@
+[29-01-2023 17:28:50] [level: ERROR] [header: NotFound]
+Книга с идентификатором 1 не зарегистрирована в системе
+[29-01-2023 17:28:51] [level: ERROR] [header: NotFound]
+Книга с идентификатором 1 не зарегистрирована в системе
+[29-01-2023 17:28:58] [level: ERROR] [header: NotFound]
+Книга с идентификатором 1 не зарегистрирована в системе
+[29-01-2023 17:28:59] [level: ERROR] [header: NotFound]
+Книга с идентификатором 1 не зарегистрирована в системе
+[29-01-2023 17:30:07] [level: ERROR] [header: NotFound]
+Книга с идентификатором 1 не зарегистрирована в системе
+[29-01-2023 17:31:49] [level: ERROR] [header: NotFound]
+Книга с идентификатором 1 не зарегистрирована в системе
+[29-01-2023 17:32:35] [level: ERROR] [header: NotFound]
+Книга с идентификатором 1 не зарегистрирована в системе
+[29-01-2023 17:32:50] [level: ERROR] [header: NotFound]
+Книга с идентификатором 1 не зарегистрирована в системе
+[29-01-2023 20:21:59] [level: ERROR] [header: BadRequest]
+Key: 'DTO.Name' Error:Field validation for 'Name' failed on the 'alphanum' tag
+Key: 'DTO.Category' Error:Field validation for 'Category' failed on the 'alphanum' tag
+Key: 'DTO.Description' Error:Field validation for 'Description' failed on the 'alphanum' tag

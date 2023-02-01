@@ -13,7 +13,7 @@ const PASSWORD = "12345678"
 const EMAIL = "TestUser@yandex.ru"
 
 func CreateUser(context localContext.LocalContext) {
-	dto := createUserRequest.CreateUserDTO{
+	dto := createUserRequest.DTO{
 		Name:     USERNAME,
 		Email:    EMAIL,
 		RoleId:   role.SUPPORT,

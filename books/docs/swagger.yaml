@@ -1,0 +1,225 @@
+definitions:
+  books.Book:
+    properties:
+      author_id:
+        example: 42
+        format: int
+        type: integer
+      book_id:
+        example: 42
+        format: int
+        type: integer
+      category:
+        example: Некрореализм
+        format: string
+        type: string
+      created_at:
+        example: "2022-01-01 00:00:00"
+        format: string
+        type: string
+      description:
+        example: Описание
+        format: string
+        type: string
+      name:
+        example: Мрак твоих глаз
+        format: string
+        type: string
+      updated_at:
+        example: "2022-01-01 00:00:00"
+        format: string
+        type: string
+    type: object
+  createBook.DTO:
+    properties:
+      author_id:
+        type: integer
+      category:
+        type: string
+      description:
+        type: string
+      name:
+        type: string
+    required:
+    - author_id
+    - category
+    - name
+    type: object
+  createBook.Response:
+    properties:
+      data:
+        $ref: '#/definitions/books.Book'
+      success:
+        type: boolean
+    type: object
+  deleteBook.Response:
+    properties:
+      success:
+        type: boolean
+    type: object
+  findBook.Response:
+    properties:
+      data:
+        $ref: '#/definitions/books.Book'
+      success:
+        type: boolean
+    type: object
+  listBook.ListBookResponse:
+    properties:
+      books:
+        items:
+          $ref: '#/definitions/books.Book'
+        type: array
+      current_page:
+        example: 1
+        type: integer
+      limit:
+        example: 10
+        type: integer
+    type: object
+  listBook.Response:
+    properties:
+      data:
+        $ref: '#/definitions/listBook.ListBookResponse'
+      success:
+        type: boolean
+    type: object
+  updateBook.DTO:
+    properties:
+      author_id:
+        type: integer
+      category:
+        type: string
+      description:
+        type: string
+      name:
+        type: string
+    type: object
+  updateBook.Response:
+    properties:
+      data:
+        $ref: '#/definitions/books.Book'
+      success:
+        type: boolean
+    type: object
+info:
+  contact: {}
+paths:
+  /book:
+    post:
+      parameters:
+      - description: Тело запроса
+        in: body
+        name: RequestBody
+        required: true
+        schema:
+          $ref: '#/definitions/createBook.DTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/createBook.Response'
+      summary: Создать запись о книге
+      tags:
+      - Books
+  /book/{bookId}:
+    delete:
+      parameters:
+      - description: Идентификатор книги
+        in: path
+        name: bookId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/deleteBook.Response'
+      summary: Удалить запись о книге
+      tags:
+      - Books
+    get:
+      parameters:
+      - description: Идентификатор пользователя
+        in: path
+        name: bookId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/findBook.Response'
+      summary: Найти книгу
+      tags:
+      - Books
+    put:
+      parameters:
+      - description: Идентификатор книги
+        in: path
+        name: bookId
+        required: true
+        type: integer
+      - description: Тело запроса
+        in: body
+        name: RequestBody
+        required: true
+        schema:
+          $ref: '#/definitions/updateBook.DTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/updateBook.Response'
+      summary: Обновить запись о книге
+      tags:
+      - Books
+  /book/list:
+    get:
+      parameters:
+      - description: Номер страницы
+        in: query
+        minimum: 1
+        name: page
+        type: integer
+      - description: Кол-во записей на странице
+        in: query
+        maximum: 20
+        minimum: 1
+        name: limit
+        type: integer
+      - description: Идентификатор книги
+        in: query
+        name: book_id
+        type: integer
+      - description: Поиск по названию книги
+        in: query
+        name: name
+        type: string
+      - description: Идентификатор автора
+        in: query
+        name: author_id
+        type: integer
+      - description: Категория
+        in: query
+        name: category
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/listBook.Response'
+      summary: Возвращает пагинированый список книг
+      tags:
+      - Books
+swagger: "2.0"
