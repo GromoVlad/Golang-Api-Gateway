@@ -23,5 +23,5 @@ func Endpoint(ginContext *gin.Context) {
 	bookRepository.CreateBook(context, dto)
 
 	result := createBook.Response{Success: true}
-	context.StatusCreated(gin.H{"data": result.Data, "success": result.Success})
+	context.StatusCreated(gin.H{"success": result.Success})
 }

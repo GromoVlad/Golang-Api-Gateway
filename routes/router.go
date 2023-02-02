@@ -3,7 +3,10 @@ package routes
 import (
 	"fmt"
 	"gin_tonic/docs"
+	"gin_tonic/internal/controllers/apiGateway/book/createBook"
 	"gin_tonic/internal/controllers/apiGateway/book/findBook"
+	"gin_tonic/internal/controllers/apiGateway/book/listBook"
+	"gin_tonic/internal/controllers/apiGateway/book/updateBook"
 	"gin_tonic/internal/controllers/auth/login"
 	"gin_tonic/internal/controllers/auth/refreshToken"
 	"gin_tonic/internal/controllers/someAction"
@@ -74,6 +77,10 @@ func api(router *gin.Engine) {
 	apiGatewayBook := router.Group("/api-gateway/book")
 	{
 		apiGatewayBook.GET("/:bookId", findBook.Endpoint)
+		apiGatewayBook.GET("/list", listBook.Endpoint)
+		apiGatewayBook.POST("/", createBook.Endpoint)
+		apiGatewayBook.PUT("/:bookId", updateBook.Endpoint)
+		//		apiGatewayBook.DELETE("/:bookId", deleteBook.Endpoint)
 	}
 }
 

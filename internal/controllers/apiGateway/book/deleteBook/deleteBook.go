@@ -1,4 +1,4 @@
-package findBook
+package deleteBook
 
 import (
 	"fmt"
@@ -10,19 +10,26 @@ import (
 	"strings"
 )
 
-// Endpoint - Найти книгу по идентификатору
-// FindBook godoc
-// @Summary      Найти книгу
+// Endpoint - Удалить запись о книге
+// UpdateBook godoc
+// @Summary      Удалить запись о книге
 // @Tags         Api Gateway Books
 // @Produce      json
-// @Param        bookId  path  int  true  "Идентификатор пользователя"
-// @Success      200  	 {object}  	findBookResponse.Response
-// @Router       /api-gateway/book/{bookId} [get]
+// @Param        bookId  path  int  true  "Идентификатор книги"
+// @Success      200  {object}  deleteBook.Response
+// @Router       /api-gateway/book/{bookId} [delete]
 func Endpoint(ginContext *gin.Context) {
 	context := localContext.LocalContext{Context: ginContext}
 
 	url := strings.Replace(fmt.Sprintf("%s", ginContext.Request.URL), "/api-gateway", "", -1)
-	response, err := http.Get(os.Getenv("MICROSERVICE_BOOKS_URL") + url)
+	request, err := http.NewRequest(
+		http.MethodDelete,
+		os.Getenv("MICROSERVICE_BOOKS_URL")+url,
+		nil,
+	)
+	context.InternalServerError(err)
+
+	response, err := http.DefaultClient.Do(request)
 	context.InternalServerError(err)
 
 	buffer, err := io.ReadAll(response.Body)

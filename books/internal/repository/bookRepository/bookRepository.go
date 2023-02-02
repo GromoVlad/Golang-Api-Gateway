@@ -54,8 +54,7 @@ func ListBooks(context localContext.LocalContext, dto listBookRequest.DTO) []boo
 
 func FindOrFailBook(context localContext.LocalContext, bookId int) books.Book {
 	var book books.Book
-	err := DB.Connect().Get(&book, "SELECT * FROM books.books WHERE book_id = $1", bookId)
-	context.InternalServerError(err)
+	DB.Connect().Get(&book, "SELECT * FROM books.books WHERE book_id = $1", bookId)
 
 	if book.BookId == 0 {
 		context.NotFoundError(

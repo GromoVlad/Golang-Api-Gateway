@@ -1,6 +1,7 @@
 package localContext
 
 import (
+	"errors"
 	"gin_tonic/internal/response/baseResponse"
 	"gin_tonic/internal/support/logger"
 	"github.com/gin-gonic/gin"
@@ -120,4 +121,26 @@ func (localContext *LocalContext) StatusCreated(result gin.H) {
 
 func (localContext *LocalContext) StatusOK(result gin.H) {
 	localContext.Context.JSON(http.StatusOK, result)
+}
+
+func (localContext *LocalContext) DetermineStatus(code int, buffer []byte) {
+	errorBuffer := errors.New(string(buffer))
+	switch code {
+	case 400:
+		localContext.BadRequestError(errorBuffer)
+	case 401:
+		localContext.UnauthorizedError(errorBuffer)
+	case 403:
+		localContext.AlreadyExistsError(errorBuffer)
+	case 404:
+		localContext.NotFoundError(errorBuffer)
+	case 409:
+		localContext.StatusConflictError(errorBuffer)
+	case 500:
+		localContext.InternalServerError(errorBuffer)
+	case 700:
+		localContext.TokenExpiredError(errorBuffer)
+	case 701:
+		localContext.InvalidTokenError(errorBuffer)
+	}
 }

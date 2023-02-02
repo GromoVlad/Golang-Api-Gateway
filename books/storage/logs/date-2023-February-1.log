@@ -1,0 +1,4 @@
+[01-02-2023 20:36:53] [level: ERROR] [header: BadRequest]
+Key: 'DTO.AuthorId' Error:Field validation for 'AuthorId' failed on the 'required' tag
+[01-02-2023 20:52:16] [level: ERROR] [header: InternalServerError]
+sql: no rows in result set
