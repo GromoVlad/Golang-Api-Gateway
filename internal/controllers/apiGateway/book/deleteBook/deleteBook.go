@@ -16,7 +16,7 @@ import (
 // @Tags         Api Gateway Books
 // @Produce      json
 // @Param        bookId  path  int  true  "Идентификатор книги"
-// @Success      200  {object}  deleteBook.Response
+// @Success      200  {object}  Response
 // @Router       /api-gateway/book/{bookId} [delete]
 func Endpoint(ginContext *gin.Context) {
 	context := localContext.LocalContext{Context: ginContext}
@@ -35,4 +35,8 @@ func Endpoint(ginContext *gin.Context) {
 	buffer, err := io.ReadAll(response.Body)
 	context.DetermineStatus(response.StatusCode, buffer)
 	ginContext.Writer.Write(buffer)
+}
+
+type Response struct {
+	Success bool `json:"success"`
 }

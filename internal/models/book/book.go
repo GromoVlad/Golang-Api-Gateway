@@ -1,9 +1,6 @@
-package books
+package book
 
-import (
-	"database/sql"
-	_ "github.com/lib/pq"
-)
+import "database/sql"
 
 type Book struct {
 	BookId      int            `db:"book_id"     json:"book_id"     example:"42"                  format:"int"`

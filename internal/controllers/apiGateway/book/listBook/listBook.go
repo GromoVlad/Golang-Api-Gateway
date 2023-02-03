@@ -2,6 +2,7 @@ package listBook
 
 import (
 	"fmt"
+	"gin_tonic/internal/models/book"
 	"gin_tonic/internal/support/localContext"
 	"github.com/gin-gonic/gin"
 	"io"
@@ -21,7 +22,7 @@ import (
 // @Param  		 name  		query	string	false	"Поиск по названию книги"
 // @Param  		 author_id  query	int		false	"Идентификатор автора"
 // @Param  		 category  	query	string	false	"Категория"
-// @Success      200  {object}  listBook.Response
+// @Success      200  {object}  Response
 // @Router       /api-gateway/book/list [get]
 func Endpoint(ginContext *gin.Context) {
 	context := localContext.LocalContext{Context: ginContext}
@@ -33,4 +34,15 @@ func Endpoint(ginContext *gin.Context) {
 	buffer, err := io.ReadAll(response.Body)
 	context.DetermineStatus(response.StatusCode, buffer)
 	ginContext.Writer.Write(buffer)
+}
+
+type Response struct {
+	Data    ListBookResponse `json:"data"`
+	Success bool             `json:"success"`
+}
+
+type ListBookResponse struct {
+	CurrentPage int         `json:"current_page"  example:"1"`
+	Limit       int         `json:"limit"         example:"10"`
+	Books       []book.Book `json:"books"`
 }

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"gin_tonic/docs"
 	"gin_tonic/internal/controllers/apiGateway/book/createBook"
+	"gin_tonic/internal/controllers/apiGateway/book/deleteBook"
 	"gin_tonic/internal/controllers/apiGateway/book/findBook"
 	"gin_tonic/internal/controllers/apiGateway/book/listBook"
 	"gin_tonic/internal/controllers/apiGateway/book/updateBook"
@@ -25,6 +26,7 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"github.com/swaggo/swag"
 	"log"
+	"os"
 )
 
 func Run() {
@@ -80,15 +82,15 @@ func api(router *gin.Engine) {
 		apiGatewayBook.GET("/list", listBook.Endpoint)
 		apiGatewayBook.POST("/", createBook.Endpoint)
 		apiGatewayBook.PUT("/:bookId", updateBook.Endpoint)
-		//		apiGatewayBook.DELETE("/:bookId", deleteBook.Endpoint)
+		apiGatewayBook.DELETE("/:bookId", deleteBook.Endpoint)
 	}
 }
 
 func swaggerInfo(swaggerInfo *swag.Spec) {
-	swaggerInfo.Title = "Gin-Tonic"
-	swaggerInfo.Description = "Минифреймворк из модулей Gin,Sqlx, Goose, Swaggo"
-	swaggerInfo.Version = "1.0"
-	swaggerInfo.Host = "localhost:8082"
-	swaggerInfo.BasePath = "/"
+	swaggerInfo.Title = os.Getenv("PROJECT_TITLE")
+	swaggerInfo.Description = os.Getenv("PROJECT_DESCRIPTION")
+	swaggerInfo.Version = os.Getenv("PROJECT_VERSION")
+	swaggerInfo.Host = os.Getenv("PROJECT_HOST")
+	swaggerInfo.BasePath = os.Getenv("PROJECT_BASE_PATH")
 	swaggerInfo.Schemes = []string{"http"}
 }

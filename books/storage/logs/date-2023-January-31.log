@@ -1,6 +1,0 @@
-[31-01-2023 10:28:27] [level: ERROR] [header: InternalServerError]
-pq: got 1 parameters but the statement requires 3
-[31-01-2023 18:30:33] [level: ERROR] [header: BadRequest]
-strconv.Atoi: parsing "": invalid syntax
-[31-01-2023 20:42:22] [level: ERROR] [header: StatusConflict]
-pq: column "id" does not exist

@@ -2,6 +2,7 @@ package updateBook
 
 import (
 	"fmt"
+	"gin_tonic/internal/models/book"
 	"gin_tonic/internal/support/localContext"
 	"github.com/gin-gonic/gin"
 	"io"
@@ -36,4 +37,16 @@ func Endpoint(ginContext *gin.Context) {
 	buffer, err := io.ReadAll(response.Body)
 	context.DetermineStatus(response.StatusCode, buffer)
 	ginContext.Writer.Write(buffer)
+}
+
+type DTO struct {
+	Name        string `form:"name,omitempty"        json:"name,omitempty"          binding:"omitempty"`
+	Category    string `form:"category,omitempty"    json:"category,omitempty"      binding:"omitempty"`
+	AuthorId    int    `form:"author_id,omitempty"   json:"author_id,omitempty"     binding:"omitempty,number"`
+	Description string `form:"description,omitempty" json:"description,omitempty"   binding:"omitempty"`
+}
+
+type Response struct {
+	Data    book.Book `json:"data"`
+	Success bool      `json:"success"`
 }
