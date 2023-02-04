@@ -1,6 +1,6 @@
 .PHONY: run
 run:
-	swag init -g cmd/main.go && docker-compose up && goose-i
+	swag init -g cmd/main.go && docker-compose up && goose-i && go get google.golang.org/grpc
 migration-status:
 	docker exec gin_tonic $(MAKE) migration-status -C migration
 migration-up:
