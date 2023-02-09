@@ -16,8 +16,11 @@ import (
 )
 
 func FindUser(context localContext.LocalContext, userId int) user.User {
+	connect := DB.Connect()
+	defer connect.Close()
+
 	var findUser user.User
-	_ = DB.Connect().Get(&findUser, "SELECT * FROM users.users WHERE user_id = $1", userId)
+	_ = connect.Get(&findUser, "SELECT * FROM users.users WHERE user_id = $1", userId)
 	if findUser.UserId == 0 {
 		context.NotFoundError(
 			errors.New(fmt.Sprintf("Пользователь с идентификатором %d не зарегистрирован в системе", userId)),
@@ -27,20 +30,23 @@ func FindUser(context localContext.LocalContext, userId int) user.User {
 }
 
 func FindUsers(context localContext.LocalContext, request listUserRequest.Request) ([]user.User, int) {
+	connect := DB.Connect()
+	defer connect.Close()
+
 	var users []user.User
 	var err, errTotal error
 	var total int
 
 	if request.Search != "" {
 		query := "SELECT * FROM users.users WHERE name ilike $1 LIMIT $2 OFFSET $3"
-		err = DB.Connect().Select(&users, query, "%"+request.Search+"%", request.Limit, request.Offset)
-		errTotal = DB.Connect().
+		err = connect.Select(&users, query, "%"+request.Search+"%", request.Limit, request.Offset)
+		errTotal = connect.
 			QueryRow("SELECT COUNT(user_id) AS total FROM users.users WHERE name ilike $1", "%"+request.Search+"%").
 			Scan(&total)
 	} else {
 		query := "SELECT * FROM users.users LIMIT $1 OFFSET $2"
-		err = DB.Connect().Select(&users, query, request.Limit, request.Offset)
-		errTotal = DB.Connect().QueryRow("SELECT COUNT(user_id) AS total FROM users.users").Scan(&total)
+		err = connect.Select(&users, query, request.Limit, request.Offset)
+		errTotal = connect.QueryRow("SELECT COUNT(user_id) AS total FROM users.users").Scan(&total)
 	}
 
 	context.InternalServerError(err)
@@ -52,15 +58,18 @@ func FindUsers(context localContext.LocalContext, request listUserRequest.Reques
 }
 
 func CreateUser(context localContext.LocalContext, dto createUserRequest.DTO) {
+	connect := DB.Connect()
+	defer connect.Close()
+
 	var findUser user.User
 	if dto.Email != "" {
-		_ = DB.Connect().Get(&findUser, "SELECT user_id FROM users.users WHERE email = $1", dto.Email)
+		_ = connect.Get(&findUser, "SELECT user_id FROM users.users WHERE email = $1", dto.Email)
 		if findUser.UserId != 0 {
 			context.AlreadyExistsError(errors.New("Пользователь с email " + dto.Email + " уже зарегистрирован в системе"))
 		}
 	}
 
-	transaction := DB.Connect().MustBegin()
+	transaction := connect.MustBegin()
 	_, err := transaction.NamedExec(
 		"INSERT INTO users.users (name, role_id, phone, password, email, venue_id, password_recovery_url, messenger, created_at, updated_at) "+
 			"VALUES (:name, :role_id, :phone, :password, :email, :venue_id, :password_recovery_url, :messenger, :created_at, :updated_at)",
@@ -84,11 +93,14 @@ func CreateUser(context localContext.LocalContext, dto createUserRequest.DTO) {
 }
 
 func UpdateUser(context localContext.LocalContext, request updateUserRequest.Request) {
+	connect := DB.Connect()
+	defer connect.Close()
+
 	findUser := FindUser(context, request.UserId)
 
 	mappingUser(&findUser, request)
 
-	transaction := DB.Connect().MustBegin()
+	transaction := connect.MustBegin()
 	_, err := transaction.NamedExec(
 		"UPDATE users.users SET updated_at = :updated_at, name = :name, role_id = :role_id, "+
 			"phone = :phone, password = :password, email = :email, venue_id = :venue_id, "+
@@ -102,9 +114,12 @@ func UpdateUser(context localContext.LocalContext, request updateUserRequest.Req
 }
 
 func DeleteUser(context localContext.LocalContext, userId int) {
+	connect := DB.Connect()
+	defer connect.Close()
+
 	FindUser(context, userId)
 
-	transaction := DB.Connect().MustBegin()
+	transaction := connect.MustBegin()
 	_, err := transaction.NamedExec("DELETE FROM users.users WHERE user_id = :user_id", &user.User{UserId: userId})
 	context.StatusConflictError(err)
 	err = transaction.Commit()
@@ -112,9 +127,12 @@ func DeleteUser(context localContext.LocalContext, userId int) {
 }
 
 func FindOrFailByEmail(context localContext.LocalContext, email string) user.User {
+	connect := DB.Connect()
+	defer connect.Close()
+
 	var findUser user.User
 	if email != "" {
-		_ = DB.Connect().Get(&findUser, "SELECT * FROM users.users WHERE email = $1", email)
+		_ = connect.Get(&findUser, "SELECT * FROM users.users WHERE email = $1", email)
 		if findUser.UserId == 0 {
 			context.NotFoundError(
 				errors.New(fmt.Sprintf("Пользователь с email %s не зарегистрирован в системе", email)),

@@ -10,8 +10,11 @@ import (
 )
 
 func FindOrFailToken(context localContext.LocalContext, token string) jwtToken.JwtToken {
+	connect := DB.Connect()
+	defer connect.Close()
+
 	var refreshToken jwtToken.JwtToken
-	_ = DB.Connect().Get(&refreshToken, "SELECT * FROM auth.jwt_tokens WHERE refresh_token = $1", token)
+	_ = connect.Get(&refreshToken, "SELECT * FROM auth.jwt_tokens WHERE refresh_token = $1", token)
 	if refreshToken.JwtTokenId == 0 {
 		context.NotFoundError(errors.New(fmt.Sprintf("Переданный токен не найден")))
 	}
@@ -19,7 +22,10 @@ func FindOrFailToken(context localContext.LocalContext, token string) jwtToken.J
 }
 
 func WriteRefreshJwtToken(context localContext.LocalContext, token string, userId int) {
-	transaction := DB.Connect().MustBegin()
+	connect := DB.Connect()
+	defer connect.Close()
+
+	transaction := connect.MustBegin()
 
 	_, err := transaction.NamedExec(
 		"DELETE FROM auth.jwt_tokens WHERE user_id = :user_id",
@@ -42,7 +48,10 @@ func WriteRefreshJwtToken(context localContext.LocalContext, token string, userI
 }
 
 func DeleteTokens(context localContext.LocalContext, userId int) {
-	transaction := DB.Connect().MustBegin()
+	connect := DB.Connect()
+	defer connect.Close()
+
+	transaction := connect.MustBegin()
 	_, err := transaction.NamedExec("DELETE FROM auth.jwt_tokens WHERE user_id = :user_id", &jwtToken.JwtToken{UserId: userId})
 	context.StatusConflictError(err)
 	err = transaction.Commit()

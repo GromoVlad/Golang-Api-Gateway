@@ -1,7 +1,7 @@
 ---------------------------------------Стартануть контейнер-------------------------------------
 docker-compose up
 ---------------------------------------ЗАПУСК МИГРАЦИЙ------------------------------------------
-Зашел в bash контейнера приложения, посмотрев :
+Зашел в bash контейнера приложения, посмотрев:
 docker ps
 docker exec -it ID_КОНТЕЙНЕРА bash
 Перешел в миграции:
@@ -22,3 +22,15 @@ curl -fsSL \
     sh
 ---------------------------------------------------------------------------------------------------
 protoc --go_out=. --go_opt=paths=source_relative     --go-grpc_out=. --go-grpc_opt=paths=source_relative   internal/controllers/someAction/grpc/my_example.proto
+
+protoc --go_out=. --go_opt=paths=source_relative  \
+   --go-grpc_out=. --go-grpc_opt=paths=source_relative  \
+   internal/controllers/someAction/grpc/route_guide.proto
+
+----------------------------------------Обновить proto файлы-------------------------------------------
+protoc --go_out=. --go_opt=paths=source_relative     --go-grpc_out=. --go-grpc_opt=paths=source_relative     internal/controllers/apiGateway/book/listBook/gRPC/listBook.proto &&
+protoc --go_out=. --go_opt=paths=source_relative     --go-grpc_out=. --go-grpc_opt=paths=source_relative     internal/controllers/apiGateway/book/findBook/gRPC/findBook.proto &&
+protoc --go_out=. --go_opt=paths=source_relative     --go-grpc_out=. --go-grpc_opt=paths=source_relative     internal/controllers/apiGateway/book/createBook/gRPC/createBook.proto &&
+protoc --go_out=. --go_opt=paths=source_relative     --go-grpc_out=. --go-grpc_opt=paths=source_relative     internal/controllers/apiGateway/book/updateBook/gRPC/updateBook.proto &&
+protoc --go_out=. --go_opt=paths=source_relative     --go-grpc_out=. --go-grpc_opt=paths=source_relative     internal/controllers/apiGateway/book/deleteBook/gRPC/deleteBook.proto
+

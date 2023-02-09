@@ -2,6 +2,7 @@ package localContext
 
 import (
 	"errors"
+	"gin_tonic/internal/response/baseErrorResponse"
 	"gin_tonic/internal/response/baseResponse"
 	"gin_tonic/internal/support/logger"
 	"github.com/gin-gonic/gin"
@@ -14,7 +15,7 @@ type LocalContext struct {
 
 func (localContext *LocalContext) InternalServerError(err error) {
 	if err != nil {
-		data := baseResponse.Response{Status: "Произошла ошибка: " + err.Error()}
+		data := baseResponse.Response{Status: err.Error()}
 		logger.ErrorLog("InternalServerError", err.Error())
 		result := baseResponse.BaseResponse{Data: data, Success: false}
 		localContext.Context.AbortWithStatusJSON(http.StatusInternalServerError, result)
@@ -24,7 +25,7 @@ func (localContext *LocalContext) InternalServerError(err error) {
 
 func (localContext *LocalContext) NotFoundError(err error) {
 	if err != nil {
-		data := baseResponse.Response{Status: "Произошла ошибка: " + err.Error()}
+		data := baseErrorResponse.Response{Message: err.Error()}
 		logger.ErrorLog("NotFound", err.Error())
 		result := baseResponse.BaseResponse{Data: data, Success: false}
 		localContext.Context.AbortWithStatusJSON(http.StatusNotFound, result)
@@ -34,7 +35,7 @@ func (localContext *LocalContext) NotFoundError(err error) {
 
 func (localContext *LocalContext) AlreadyExistsError(err error) {
 	if err != nil {
-		data := baseResponse.Response{Status: "Произошла ошибка: " + err.Error()}
+		data := baseResponse.Response{Status: err.Error()}
 		logger.ErrorLog("AlreadyExists", err.Error())
 		result := baseResponse.BaseResponse{Data: data, Success: false}
 		localContext.Context.AbortWithStatusJSON(http.StatusForbidden, result)
@@ -44,7 +45,7 @@ func (localContext *LocalContext) AlreadyExistsError(err error) {
 
 func (localContext *LocalContext) BadRequestError(err error) {
 	if err != nil {
-		data := baseResponse.Response{Status: "Произошла ошибка: " + err.Error()}
+		data := baseErrorResponse.Response{Message: err.Error()}
 		logger.ErrorLog("BadRequest", err.Error())
 		result := baseResponse.BaseResponse{Data: data, Success: false}
 		localContext.Context.AbortWithStatusJSON(http.StatusBadRequest, result)
@@ -60,7 +61,7 @@ func (localContext *LocalContext) TokenError(err error) {
 
 func (localContext *LocalContext) TokenExpiredError(err error) {
 	if err != nil && err.Error() == "Token is expired" {
-		data := baseResponse.Response{Status: "Произошла ошибка: Истекло время жизни токена"}
+		data := baseResponse.Response{Status: "Истекло время жизни токена"}
 		logger.ErrorLog("TokenExpired", "Истекло время жизни токена")
 		result := baseResponse.BaseResponse{Data: data, Success: false}
 		localContext.Context.AbortWithStatusJSON(700, result)
@@ -70,7 +71,7 @@ func (localContext *LocalContext) TokenExpiredError(err error) {
 
 func (localContext *LocalContext) InvalidTokenError(err error) {
 	if err != nil && err.Error() == "signature is invalid" {
-		data := baseResponse.Response{Status: "Произошла ошибка: Невалидная структура токена"}
+		data := baseResponse.Response{Status: "Невалидная структура токена"}
 		logger.ErrorLog("InvalidToken", "Невалидная структура токена")
 		result := baseResponse.BaseResponse{Data: data, Success: false}
 		localContext.Context.AbortWithStatusJSON(701, result)
@@ -85,7 +86,7 @@ func (localContext *LocalContext) PasswordError(err error) {
 
 func (localContext *LocalContext) WrongPasswordError(err error) {
 	if err != nil && err.Error() == "crypto/bcrypt: hashedPassword is not the hash of the given password" {
-		data := baseResponse.Response{Status: "Произошла ошибка: Передан некорректный пароль"}
+		data := baseResponse.Response{Status: "Передан некорректный пароль"}
 		logger.ErrorLog("WrongPassword", " Передан некорректный пароль")
 		result := baseResponse.BaseResponse{Data: data, Success: false}
 		localContext.Context.AbortWithStatusJSON(http.StatusUnauthorized, result)
@@ -97,7 +98,7 @@ func (localContext *LocalContext) WrongPasswordError(err error) {
 
 func (localContext *LocalContext) StatusConflictError(err error) {
 	if err != nil {
-		data := baseResponse.Response{Status: "Произошла ошибка: " + err.Error()}
+		data := baseResponse.Response{Status: err.Error()}
 		logger.ErrorLog("StatusConflict", err.Error())
 		result := baseResponse.BaseResponse{Data: data, Success: false}
 		localContext.Context.AbortWithStatusJSON(http.StatusConflict, result)
@@ -107,7 +108,7 @@ func (localContext *LocalContext) StatusConflictError(err error) {
 
 func (localContext *LocalContext) UnauthorizedError(err error) {
 	if err != nil {
-		data := baseResponse.Response{Status: "Произошла ошибка: " + err.Error()}
+		data := baseResponse.Response{Status: err.Error()}
 		logger.ErrorLog("Unauthorized", err.Error())
 		result := baseResponse.BaseResponse{Data: data, Success: false}
 		localContext.Context.AbortWithStatusJSON(http.StatusUnauthorized, result)

@@ -1,11 +1,16 @@
 package createBook
 
 import (
+	"context"
+	"fmt"
+	protobuf "gin_tonic/internal/controllers/apiGateway/book/createBook/gRPC"
+	"gin_tonic/internal/gRPC"
+	createBookRequest "gin_tonic/internal/requests/book/createBook"
+	"gin_tonic/internal/response/baseResponse"
 	"gin_tonic/internal/support/localContext"
 	"github.com/gin-gonic/gin"
-	"io"
-	"net/http"
-	"os"
+	"log"
+	"time"
 )
 
 // Endpoint - Создать запись о книге
@@ -14,30 +19,36 @@ import (
 // @Tags         Api Gateway Books
 // @Produce      json
 // @Param  		 RequestBody  body  DTO  true  "Тело запроса"
-// @Success      201  {object}  Response
+// @Success      201  {object}  baseResponse.Response
 // @Router       /api-gateway/book [post]
 func Endpoint(ginContext *gin.Context) {
 	context := localContext.LocalContext{Context: ginContext}
+	request := createBookRequest.GetRequest(context)
 
-	response, err := http.Post(
-		os.Getenv("MICROSERVICE_BOOKS_URL")+"/book",
-		"application/json",
-		ginContext.Request.Body,
-	)
-	context.InternalServerError(err)
+	connection := gRPC.Connection()
+	defer connection.Close()
 
-	buffer, err := io.ReadAll(response.Body)
-	context.DetermineStatus(response.StatusCode, buffer)
-	ginContext.Writer.Write(buffer)
+	client := protobuf.NewCreateBookClient(connection)
+	response := createBook(client, request)
+
+	if response.Success == false {
+		context.BadRequestError(fmt.Errorf(response.Message))
+	}
+
+	result := baseResponse.BaseResponse{
+		Data:    baseResponse.Response{Status: "Книга создана"},
+		Success: response.Success,
+	}
+	context.StatusCreated(gin.H{"data": result.Data, "success": result.Success})
 }
 
-type DTO struct {
-	Name        string `form:"name"                   json:"name"                    binding:"required"`
-	Category    string `form:"category"               json:"category"                binding:"required"`
-	AuthorId    int    `form:"author_id"              json:"author_id"               binding:"required,number"`
-	Description string `form:"description,omitempty"  json:"description,omitempty"   binding:"omitempty"`
-}
+func createBook(client protobuf.CreateBookClient, request *protobuf.Request) *protobuf.Response {
+	context, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	book, err := client.CreateBook(context, request)
+	if err != nil {
+		log.Fatalf("%v \n", err.Error())
+	}
 
-type Response struct {
-	Success bool `json:"success"`
+	return book
 }

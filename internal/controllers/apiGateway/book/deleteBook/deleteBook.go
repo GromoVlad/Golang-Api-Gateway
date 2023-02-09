@@ -1,13 +1,15 @@
 package deleteBook
 
 import (
+	"context"
 	"fmt"
+	protobuf "gin_tonic/internal/controllers/apiGateway/book/deleteBook/gRPC"
+	"gin_tonic/internal/gRPC"
 	"gin_tonic/internal/support/localContext"
 	"github.com/gin-gonic/gin"
-	"io"
-	"net/http"
-	"os"
-	"strings"
+	"log"
+	"strconv"
+	"time"
 )
 
 // Endpoint - Удалить запись о книге
@@ -21,22 +23,40 @@ import (
 func Endpoint(ginContext *gin.Context) {
 	context := localContext.LocalContext{Context: ginContext}
 
-	url := strings.Replace(fmt.Sprintf("%s", ginContext.Request.URL), "/api-gateway", "", -1)
-	request, err := http.NewRequest(
-		http.MethodDelete,
-		os.Getenv("MICROSERVICE_BOOKS_URL")+url,
-		nil,
-	)
-	context.InternalServerError(err)
+	bookId, err := strconv.Atoi(context.Context.Param("bookId"))
+	context.BadRequestError(err)
+	request := &protobuf.Request{BookId: int32(bookId)}
 
-	response, err := http.DefaultClient.Do(request)
-	context.InternalServerError(err)
+	connection := gRPC.Connection()
+	defer connection.Close()
 
-	buffer, err := io.ReadAll(response.Body)
-	context.DetermineStatus(response.StatusCode, buffer)
-	ginContext.Writer.Write(buffer)
+	client := protobuf.NewDeleteBookClient(connection)
+	response := deleteBook(client, request)
+
+	if response.ErrorMessage != "" {
+		context.NotFoundError(fmt.Errorf(response.ErrorMessage))
+	}
+
+	result := Response{
+		Data:    fmt.Sprintf("Книга с идентификатором = %d удалена", bookId),
+		Success: response.Success,
+	}
+
+	context.StatusOK(gin.H{"data": result.Data, "success": result.Success})
+}
+
+func deleteBook(client protobuf.DeleteBookClient, request *protobuf.Request) *protobuf.Response {
+	context, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	response, err := client.DeleteBook(context, request)
+	if err != nil {
+		log.Fatalf("%v \n", err.Error())
+	}
+
+	return response
 }
 
 type Response struct {
+	Data    any  `json:"data"`
 	Success bool `json:"success"`
 }

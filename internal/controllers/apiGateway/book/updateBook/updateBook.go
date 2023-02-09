@@ -1,14 +1,15 @@
 package updateBook
 
 import (
+	"context"
 	"fmt"
-	"gin_tonic/internal/models/book"
+	protobuf "gin_tonic/internal/controllers/apiGateway/book/updateBook/gRPC"
+	"gin_tonic/internal/gRPC"
+	updateBookRequest "gin_tonic/internal/requests/book/updateBook"
 	"gin_tonic/internal/support/localContext"
 	"github.com/gin-gonic/gin"
-	"io"
-	"net/http"
-	"os"
-	"strings"
+	"log"
+	"time"
 )
 
 // Endpoint - Обновить запись о книге
@@ -22,31 +23,34 @@ import (
 // @Router       /api-gateway/book/{bookId} [put]
 func Endpoint(ginContext *gin.Context) {
 	context := localContext.LocalContext{Context: ginContext}
+	request := updateBookRequest.GetRequest(context)
 
-	url := strings.Replace(fmt.Sprintf("%s", ginContext.Request.URL), "/api-gateway", "", -1)
-	request, err := http.NewRequest(
-		http.MethodPut,
-		os.Getenv("MICROSERVICE_BOOKS_URL")+url,
-		ginContext.Request.Body,
-	)
-	context.InternalServerError(err)
+	connection := gRPC.Connection()
+	defer connection.Close()
 
-	response, err := http.DefaultClient.Do(request)
-	context.InternalServerError(err)
+	client := protobuf.NewUpdateBookClient(connection)
+	response := updateBook(client, request)
 
-	buffer, err := io.ReadAll(response.Body)
-	context.DetermineStatus(response.StatusCode, buffer)
-	ginContext.Writer.Write(buffer)
+	if response.ErrorMessage != "" {
+		context.NotFoundError(fmt.Errorf(response.ErrorMessage))
+	}
+
+	result := Response{Data: response, Success: response.Success}
+	context.StatusOK(gin.H{"data": result.Data, "success": result.Success})
 }
 
-type DTO struct {
-	Name        string `form:"name,omitempty"        json:"name,omitempty"          binding:"omitempty"`
-	Category    string `form:"category,omitempty"    json:"category,omitempty"      binding:"omitempty"`
-	AuthorId    int    `form:"author_id,omitempty"   json:"author_id,omitempty"     binding:"omitempty,number"`
-	Description string `form:"description,omitempty" json:"description,omitempty"   binding:"omitempty"`
+func updateBook(client protobuf.UpdateBookClient, request *protobuf.Request) *protobuf.Response {
+	context, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	book, err := client.UpdateBook(context, request)
+	if err != nil {
+		log.Fatalf("%v \n", err.Error())
+	}
+
+	return book
 }
 
 type Response struct {
-	Data    book.Book `json:"data"`
-	Success bool      `json:"success"`
+	Data    any  `json:"data"`
+	Success bool `json:"success"`
 }

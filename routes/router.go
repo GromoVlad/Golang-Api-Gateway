@@ -10,7 +10,6 @@ import (
 	"gin_tonic/internal/controllers/apiGateway/book/updateBook"
 	"gin_tonic/internal/controllers/auth/login"
 	"gin_tonic/internal/controllers/auth/refreshToken"
-	"gin_tonic/internal/controllers/someAction"
 	"gin_tonic/internal/controllers/user/deleteUser"
 	"gin_tonic/internal/controllers/user/listUser"
 	"gin_tonic/internal/controllers/user/registrationUser"
@@ -73,7 +72,6 @@ func api(router *gin.Engine) {
 		authGroup.POST("/refresh-token", refreshToken.Endpoint)
 	}
 
-	router.POST("/some-action", someAction.Endpoint)
 	// router.POST("/some-action", authWaiterRole.Middleware(), someAction.Endpoint)
 
 	apiGatewayBook := router.Group("/api-gateway/book")

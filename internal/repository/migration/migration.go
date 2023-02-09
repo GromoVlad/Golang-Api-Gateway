@@ -14,8 +14,11 @@ type Migration struct {
 }
 
 func FindAllMigration() []Migration {
+	connect := DB.Connect()
+	defer connect.Close()
+
 	var migration []Migration
-	err := DB.Connect().Select(&migration, "SELECT * FROM migrations")
+	err := connect.Select(&migration, "SELECT * FROM migrations")
 	if err != nil {
 		log.Fatalln(err)
 	}

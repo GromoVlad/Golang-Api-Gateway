@@ -12,8 +12,19 @@ migration-create:
 documentation-create:
 	swag init -g cmd/main.go
 test:
-	go test ./tests/...
+	docker exec gin_tonic go test ./tests/...
 goose-i:
 	curl -fsSL \
 	    https://raw.githubusercontent.com/pressly/goose/master/install.sh |\
 	    sh
+refresh-proto:
+	protoc --go_out=. --go_opt=paths=source_relative     --go-grpc_out=. --go-grpc_opt=paths=source_relative \
+  		internal/controllers/apiGateway/book/listBook/gRPC/listBook.proto && \
+		protoc --go_out=. --go_opt=paths=source_relative     --go-grpc_out=. --go-grpc_opt=paths=source_relative \
+		internal/controllers/apiGateway/book/findBook/gRPC/findBook.proto && \
+		protoc --go_out=. --go_opt=paths=source_relative     --go-grpc_out=. --go-grpc_opt=paths=source_relative \
+		  internal/controllers/apiGateway/book/createBook/gRPC/createBook.proto && \
+		protoc --go_out=. --go_opt=paths=source_relative     --go-grpc_out=. --go-grpc_opt=paths=source_relative \
+		  internal/controllers/apiGateway/book/updateBook/gRPC/updateBook.proto && \
+		protoc --go_out=. --go_opt=paths=source_relative     --go-grpc_out=. --go-grpc_opt=paths=source_relative \
+		   internal/controllers/apiGateway/book/deleteBook/gRPC/deleteBook.proto

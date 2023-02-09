@@ -1,13 +1,15 @@
 package findBook
 
 import (
+	"context"
 	"fmt"
+	protobuf "gin_tonic/internal/controllers/apiGateway/book/findBook/gRPC"
+	"gin_tonic/internal/gRPC"
 	"gin_tonic/internal/support/localContext"
 	"github.com/gin-gonic/gin"
-	"io"
-	"net/http"
-	"os"
-	"strings"
+	"log"
+	"strconv"
+	"time"
 )
 
 // Endpoint - Найти книгу по идентификатору
@@ -21,11 +23,35 @@ import (
 func Endpoint(ginContext *gin.Context) {
 	context := localContext.LocalContext{Context: ginContext}
 
-	url := strings.Replace(fmt.Sprintf("%s", ginContext.Request.URL), "/api-gateway", "", -1)
-	response, err := http.Get(os.Getenv("MICROSERVICE_BOOKS_URL") + url)
-	context.InternalServerError(err)
+	bookId, err := strconv.Atoi(context.Context.Param("bookId"))
+	context.BadRequestError(err)
 
-	buffer, err := io.ReadAll(response.Body)
-	context.DetermineStatus(response.StatusCode, buffer)
-	ginContext.Writer.Write(buffer)
+	connection := gRPC.Connection()
+	defer connection.Close()
+
+	client := protobuf.NewFindBookClient(connection)
+	response := findBook(client, &protobuf.Request{BookId: int32(bookId)})
+
+	if response.BookId == 0 {
+		context.NotFoundError(fmt.Errorf(response.ErrorMessage))
+	}
+
+	result := Response{Data: response, Success: true}
+	context.StatusOK(gin.H{"data": result.Data, "success": result.Success})
+}
+
+func findBook(client protobuf.FindBookClient, request *protobuf.Request) *protobuf.Response {
+	context, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	book, err := client.FindBook(context, request)
+	if err != nil {
+		log.Fatalf("%v \n", err.Error())
+	}
+
+	return book
+}
+
+type Response struct {
+	Data    any  `json:"data"`
+	Success bool `json:"success"`
 }
